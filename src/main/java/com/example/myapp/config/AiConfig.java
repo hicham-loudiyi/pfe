@@ -27,13 +27,19 @@ import org.springframework.core.io.Resource;
 @Configuration
 public class AiConfig {
 
+    private final ConfigurationPropertieValue configuration;
+
+    public AiConfig(ConfigurationPropertieValue configuration) {
+        this.configuration = configuration;
+    }
+
     @Bean
     public ChatLanguageModel chatModel() {
         return OllamaChatModel.builder()
-                .baseUrl("http://localhost:11434")
-                .modelName("llama3")
-                .timeout(Duration.ofMinutes(5))
-                // .temperature()
+                .baseUrl(configuration.getClmBaseUrl())
+                .modelName(configuration.getClmModelName())
+                .timeout(Duration.ofMinutes(configuration.getTimeout()))
+                .temperature(configuration.getTemperature())
                 .build();
     }
 
@@ -45,8 +51,8 @@ public class AiConfig {
     @Bean
     public EmbeddingModel embeddingModel() {
         return OllamaEmbeddingModel.builder()
-                .baseUrl("http://localhost:11434")
-                .modelName("nomic-embed-text")
+                .baseUrl(configuration.getEmBaseUrl())
+                .modelName(configuration.getEmModelName())
                 .build();
     }
 
@@ -83,19 +89,9 @@ public class AiConfig {
         return EmbeddingStoreContentRetriever.builder()
                 .embeddingModel(embeddingModel)
                 .embeddingStore(embeddingStore)
-                .maxResults(2)
-                .minScore(0.6)
+                .maxResults(configuration.getCrMaxResults())
+                .minScore(configuration.getCrMinScore())
                 .build();
     }
-
-//    @Bean
-//    public OllamaStreamingChatModel oscm() {
-//        return OllamaStreamingChatModel.builder()
-//                .baseUrl("http://localhost:11434")
-//                .modelName("llama3")
-//                .timeout(Duration.ofMinutes(10))
-//                .temperature(0.7)
-//                .build();
-//    }
 
 }

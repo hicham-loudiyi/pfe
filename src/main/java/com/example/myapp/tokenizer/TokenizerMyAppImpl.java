@@ -42,14 +42,6 @@ public class TokenizerMyAppImpl implements Tokenizer {
 
     @Override
     public int estimateTokenCountInTools(Iterable<Object> objectsWithTools) {
-//        int total = 0;
-//        if (objectsWithTools != null) {
-//            for (Object obj : objectsWithTools) {
-//                total += estimateTokenCountInTools(obj);
-//            }
-//        }
-//        return total
-
         return StreamSupport.stream(
                         IterableUtils.emptyIfNull(objectsWithTools).spliterator(),
                         true)
@@ -59,14 +51,6 @@ public class TokenizerMyAppImpl implements Tokenizer {
 
     @Override
     public int estimateTokenCountInToolSpecifications(Iterable<ToolSpecification> toolSpecifications) {
-//        int total = 0;
-//        if (toolSpecifications != null) {
-//            for (ToolSpecification spec : toolSpecifications) {
-//                total += estimateTokenCountInText(spec.toString());
-//            }
-//        }
-//      return total;
-
         return StreamSupport.stream(
                     IterableUtils.emptyIfNull(toolSpecifications).spliterator(),
                     true)
@@ -76,13 +60,6 @@ public class TokenizerMyAppImpl implements Tokenizer {
 
     @Override
     public int estimateTokenCountInToolExecutionRequests(Iterable<ToolExecutionRequest> toolExecutionRequests) {
-//        int total = 0;
-//        if (toolExecutionRequests != null) {
-//            for (ToolExecutionRequest req : toolExecutionRequests) {
-//                total += estimateTokenCountInText(req.toString());
-//            }
-//        }
-//      return total;
         return StreamSupport.stream(
                 IterableUtils.emptyIfNull(toolExecutionRequests).spliterator(),
                 true)
