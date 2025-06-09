@@ -1,7 +1,6 @@
 package com.example.myapp.config;
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentParser;
-import dev.langchain4j.data.document.loader.FileSystemDocumentLoader;
 import dev.langchain4j.data.document.parser.apache.pdfbox.ApachePdfBoxDocumentParser;
 import dev.langchain4j.data.document.splitter.DocumentSplitters;
 import dev.langchain4j.data.segment.TextSegment;
@@ -27,19 +26,12 @@ import org.springframework.core.io.Resource;
 @Configuration
 public class AiConfig {
 
-    private final ConfigurationPropertieValue configuration;
-
-    public AiConfig(ConfigurationPropertieValue configuration) {
-        this.configuration = configuration;
-    }
-
     @Bean
     public ChatLanguageModel chatModel() {
         return OllamaChatModel.builder()
-                .baseUrl(configuration.getClmBaseUrl())
-                .modelName(configuration.getClmModelName())
-                .timeout(Duration.ofMinutes(configuration.getTimeout()))
-                .temperature(configuration.getTemperature())
+                .baseUrl("http://localhost:11434")
+                .modelName("llama3")
+                .timeout(Duration.ofMinutes(5))
                 .build();
     }
 
@@ -51,8 +43,8 @@ public class AiConfig {
     @Bean
     public EmbeddingModel embeddingModel() {
         return OllamaEmbeddingModel.builder()
-                .baseUrl(configuration.getEmBaseUrl())
-                .modelName(configuration.getEmModelName())
+                .baseUrl("http://localhost:11434")
+                .modelName("nomic-embed-text")
                 .build();
     }
 
@@ -67,10 +59,10 @@ public class AiConfig {
             EmbeddingModel embeddingModel,
             EmbeddingStore<TextSegment> embeddingStore,
             Tokenizer tokenizer,
-            @Value("classpath:/docs/texte.txt") Resource textResource,
-            @Value("classpath:/docs") Resource folderResource,
+            //@Value("classpath:/docs/texte.txt") Resource textResource,
+            //@Value("classpath:/docs") Resource folderResource,
             @Value("classpath:/docs/document.pdf") Resource pdfResource
-            ) {
+    ) {
         return args -> {
             //var doc = FileSystemDocumentLoader.loadDocument(pdfResource.getFile().toPath());
             var ingestor = EmbeddingStoreIngestor.builder()
@@ -89,8 +81,8 @@ public class AiConfig {
         return EmbeddingStoreContentRetriever.builder()
                 .embeddingModel(embeddingModel)
                 .embeddingStore(embeddingStore)
-                .maxResults(configuration.getCrMaxResults())
-                .minScore(configuration.getCrMinScore())
+                .maxResults(2)
+                .minScore(0.6)
                 .build();
     }
 
