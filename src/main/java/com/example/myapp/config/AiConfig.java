@@ -26,25 +26,34 @@ import org.springframework.core.io.Resource;
 @Configuration
 public class AiConfig {
 
+    private final ConfigurationPropertyValue configuration;
+
+    public AiConfig(ConfigurationPropertyValue configuration) {
+        this.configuration = configuration;
+    }
+
     @Bean
     public ChatLanguageModel chatModel() {
         return OllamaChatModel.builder()
-                .baseUrl("http://localhost:11434")
-                .modelName("llama3")
-                .timeout(Duration.ofMinutes(5))
+                .baseUrl(configuration.getChatModelBaseUrl())
+                .modelName(configuration.getChatModelModelName())
+                .timeout(Duration.ofMinutes(configuration.getTimeout()))
                 .build();
     }
 
     @Bean
     ChatMemoryProvider chatMemoryProvider() {
-        return chatId -> MessageWindowChatMemory.withMaxMessages(10);
+        return chatId ->
+                MessageWindowChatMemory.withMaxMessages(
+                        configuration.getChatMemoryMaxMessages()
+                );
     }
 
     @Bean
     public EmbeddingModel embeddingModel() {
         return OllamaEmbeddingModel.builder()
-                .baseUrl("http://localhost:11434")
-                .modelName("nomic-embed-text")
+                .baseUrl(configuration.getEmbeddingsModelBaseUrl())
+                .modelName(configuration.getEmbeddingsModelModelName())
                 .build();
     }
 
@@ -55,18 +64,18 @@ public class AiConfig {
 
     @Bean
     ApplicationRunner loadDocumentToVectorStore(
-            //ChatLanguageModel chatLanguageModel,
             EmbeddingModel embeddingModel,
             EmbeddingStore<TextSegment> embeddingStore,
             Tokenizer tokenizer,
-            //@Value("classpath:/docs/texte.txt") Resource textResource,
-            //@Value("classpath:/docs") Resource folderResource,
             @Value("classpath:/docs/document.pdf") Resource pdfResource
     ) {
         return args -> {
-            //var doc = FileSystemDocumentLoader.loadDocument(pdfResource.getFile().toPath());
             var ingestor = EmbeddingStoreIngestor.builder()
-                    .documentSplitter(DocumentSplitters.recursive(1000,100,tokenizer))
+                    .documentSplitter(DocumentSplitters.recursive(
+                            configuration.getDocumentSplitterMaxSegmentSizeInTokens(),
+                            configuration.getDocumentSplitterMaxOverlapSizeInTokens(),
+                            tokenizer)
+                    )
                     .embeddingModel(embeddingModel)
                     .embeddingStore(embeddingStore)
                     .build();
@@ -81,8 +90,8 @@ public class AiConfig {
         return EmbeddingStoreContentRetriever.builder()
                 .embeddingModel(embeddingModel)
                 .embeddingStore(embeddingStore)
-                .maxResults(2)
-                .minScore(0.6)
+                .maxResults(configuration.getContentRetrieverMaxResults())
+                .minScore(configuration.getContentRetrieverMinScore())
                 .build();
     }
 
