@@ -7,6 +7,8 @@ import dev.langchain4j.model.Tokenizer;
 import org.apache.commons.collections4.IterableUtils;
 import org.springframework.stereotype.Component;
 import java.util.stream.StreamSupport;
+import java.util.function.ToIntFunction;
+import org.apache.commons.lang3.StringUtils;
 
 @Component
 public class TokenizerMyAppImpl implements Tokenizer {
@@ -18,7 +20,9 @@ public class TokenizerMyAppImpl implements Tokenizer {
 
     @Override
     public int estimateTokenCountInText(String text) {
-        if (text == null || text.isBlank()) return 0;
+        if (StringUtils.isBlank(text)) {
+            return 0;
+        }
         return tokenizer.encode(text).getTokens().length;
     }
 
@@ -40,33 +44,6 @@ public class TokenizerMyAppImpl implements Tokenizer {
     }
 
     @Override
-    public int estimateTokenCountInTools(Iterable<Object> objectsWithTools) {
-        return StreamSupport.stream(
-                        IterableUtils.emptyIfNull(objectsWithTools).spliterator(),
-                        true)
-                .mapToInt(this::estimateTokenCountInTools)
-                .sum();
-    }
-
-    @Override
-    public int estimateTokenCountInToolSpecifications(Iterable<ToolSpecification> toolSpecifications) {
-        return StreamSupport.stream(
-                        IterableUtils.emptyIfNull(toolSpecifications).spliterator(),
-                        true)
-                .mapToInt(spec -> estimateTokenCountInText(spec.toString()))
-                .sum();
-    }
-
-    @Override
-    public int estimateTokenCountInToolExecutionRequests(Iterable<ToolExecutionRequest> toolExecutionRequests) {
-        return StreamSupport.stream(
-                        IterableUtils.emptyIfNull(toolExecutionRequests).spliterator(),
-                        true)
-                .mapToInt(req -> estimateTokenCountInText(req.toString()))
-                .sum();
-    }
-
-    @Override
     public int estimateTokenCountInForcefulToolSpecification(ToolSpecification toolSpecification) {
         if (toolSpecification == null) return 0;
         return estimateTokenCountInText(toolSpecification.toString());
@@ -76,5 +53,28 @@ public class TokenizerMyAppImpl implements Tokenizer {
     public int estimateTokenCountInForcefulToolExecutionRequest(ToolExecutionRequest toolExecutionRequest) {
         if (toolExecutionRequest == null) return 0;
         return estimateTokenCountInText(toolExecutionRequest.toString());
+    }
+
+    @Override
+    public int estimateTokenCountInTools(Iterable<Object> objectsWithTools) {
+        return countTokensInIterable(objectsWithTools, this::estimateTokenCountInTools);
+    }
+
+    @Override
+    public int estimateTokenCountInToolSpecifications(Iterable<ToolSpecification> toolSpecifications) {
+        return countTokensInIterable(toolSpecifications, spec -> estimateTokenCountInText(spec.toString()));
+    }
+
+    @Override
+    public int estimateTokenCountInToolExecutionRequests(Iterable<ToolExecutionRequest> toolExecutionRequests) {
+        return countTokensInIterable(toolExecutionRequests, req -> estimateTokenCountInText(req.toString()));
+    }
+
+    private <T> int countTokensInIterable(Iterable<T> iterable, ToIntFunction<T> tokenCounter) {
+        return StreamSupport.stream(
+                        IterableUtils.emptyIfNull(iterable).spliterator(),
+                        true)
+                .mapToInt(tokenCounter)
+                .sum();
     }
 }
