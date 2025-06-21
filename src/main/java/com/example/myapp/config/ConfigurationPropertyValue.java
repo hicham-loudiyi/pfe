@@ -3,8 +3,9 @@ package com.example.myapp.config;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
-@Configuration
+@Component
 @Getter
 public class ConfigurationPropertyValue {
 
@@ -25,4 +26,19 @@ public class ConfigurationPropertyValue {
 
     @Value("${chat-memory.max-messages}")
     private int chatMemoryMaxMessages;
+
+    @Value("${embeddings-model.model-name}")
+    private String embeddingsModelName;
+
+    @Value("${content-retriever.max-results}")
+    private int contentRetrieverMaxResults;
+
+    @Value("${content-retriever.min-score}")
+    private double contentRetrieverMinScore;
+
+    @Value("${document-splitter.max-segment-size-in-tokens}")
+    private int documentSplitterMaxSegmentSizeInTokens;
+
+    @Value("${document-splitter.max-overlap-size-in-tokens}")
+    private int documentSplitterMaxOverlapSizeInTokens;
 }

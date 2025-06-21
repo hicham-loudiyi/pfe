@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testeur d'analyse d'erreurs</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        textarea, #result {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #screenshotPreview {
+            max-width: 300px;
+            max-height: 300px;
+            margin: 10px 0;
+        }
+        .loading {
+            display: none;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+<h1>Analyseur d'erreurs techniques</h1>
+
+<div>
+    <label for="stacktrace">Stacktrace de l'erreur:</label>
+    <textarea id="stacktrace" placeholder="Collez votre stacktrace ici..."></textarea>
+</div>
+
+<div>
+    <label for="screenshot">Capture d'écran (optionnelle):</label>
+    <input type="file" id="screenshot" accept="image/*">
+    <img id="screenshotPreview" style="display: none;">
+</div>
+
+<button id="analyzeBtn">Analyser l'erreur</button>
+<div id="loading" class="loading">Analyse en cours...</div>
+
+<div>
+    <label for="result">Résultat de l'analyse:</label>
+    <div id="result"></div>
+</div>
+
+<script>
+    document.getElementById('analyzeBtn').addEventListener('click', async () => {
+        const stacktrace = document.getElementById('stacktrace').value.trim();
+        const screenshotFile = document.getElementById('screenshot').files[0];
+
+        if (!stacktrace) {
+            alert('Veuillez entrer une stacktrace');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('stacktrace', stacktrace);
+        if (screenshotFile) {
+            formData.append('screenshot', screenshotFile);
+        }
+
+        const resultDiv = document.getElementById('result');
+        const loadingDiv = document.getElementById('loading');
+
+        loadingDiv.style.display = 'block';
+        resultDiv.innerHTML = '';
+
+        try {
+            const response = await fetch('/api/errors', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erreur HTTP: ${response.status}`);
+            }
+
+            const data = await response.json();
+            resultDiv.innerHTML = formatAnalysisResult(data.analysis);
+        } catch (error) {
+            resultDiv.innerHTML = `<p style="color: red;">Erreur: ${error.message}</p>`;
+        } finally {
+            loadingDiv.style.display = 'none';
+        }
+    });
+
+    // Aperçu de l'image sélectionnée
+    document.getElementById('screenshot').addEventListener('change', function(e) {
+        const preview = document.getElementById('screenshotPreview');
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(this.files[0]);
+        } else {
+            preview.style.display = 'none';
+        }
+    });
+
+    function formatAnalysisResult(analysis) {
+        // Formatage basique - vous pouvez l'améliorer selon votre structure de réponse
+        return `<div style="white-space: pre-wrap; background: #f5f5f5; padding: 15px; border-radius: 5px;">${analysis}</div>`;
+    }
+</script>
+</body>
+</html>
