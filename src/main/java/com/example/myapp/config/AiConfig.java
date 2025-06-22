@@ -1,9 +1,10 @@
 package com.example.myapp.config;
+import ai.djl.modality.nlp.preprocess.Tokenizer;
 import dev.langchain4j.data.document.splitter.DocumentSplitters;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
-import dev.langchain4j.model.Tokenizer;
+//import dev.langchain4j.model.Tokenizer;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.embedding.onnx.HuggingFaceTokenizer;
@@ -61,14 +62,14 @@ public class AiConfig {
     }
 
     @Bean
-    public Tokenizer tokenizer() {
+    public HuggingFaceTokenizer tokenizer() {
         return new HuggingFaceTokenizer();
     }
 
     @Bean
     public EmbeddingStoreIngestor ingestor(EmbeddingStore<TextSegment> store,
                                            EmbeddingModel model,
-                                           Tokenizer tokenizer) {
+                                           HuggingFaceTokenizer tokenizer) {
         return EmbeddingStoreIngestor.builder()
                 .embeddingStore(store)
                 .embeddingModel(model)
