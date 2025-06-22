@@ -1,6 +1,9 @@
 package com.example.myapp.web;
 
-import com.example.myapp.agents.ErrorAnalysisAgent;
+import com.example.myapp.dto.AnalysisResult;
+import com.example.myapp.exceptions.FileSizeException;
+import com.example.myapp.exceptions.InvalidFileTypeException;
+import com.example.myapp.service.ErrorAnalysisService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -9,8 +12,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -21,8 +22,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import java.time.Instant;
-import java.util.Base64;
 
 
 @RestController
@@ -32,8 +31,7 @@ import java.util.Base64;
 @Tag(name = "Error Analysis", description = "API d'analyse technique d'erreurs")
 public class ErrorAnalysisController {
 
-    private final ErrorAnalysisAgent errorAnalysisAgent;
-    private static final long MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+    private final ErrorAnalysisService errorAnalysisService;
 
     @Operation(summary = "Analyser une erreur technique")
     @ApiResponses({
@@ -50,18 +48,8 @@ public class ErrorAnalysisController {
             @RequestPart(required = false) @Parameter(description = "Capture d'écran optionnelle") MultipartFile screenshot) {
 
         try {
-            // Validation de l'image si présente
-            String screenshotBase64 = null;
-            if (screenshot != null && !screenshot.isEmpty()) {
-                validateImageFile(screenshot);
-                screenshotBase64 = Base64.getEncoder().encodeToString(screenshot.getBytes());
-            }
-
-            // Appel du service d'analyse
-            String analysis = errorAnalysisAgent.analyzeErrorWithRag(stacktrace, screenshotBase64);
-
-            return ResponseEntity.ok(new AnalysisResult(analysis));
-
+            AnalysisResult result = errorAnalysisService.analyzeError(stacktrace, screenshot);
+            return ResponseEntity.ok(result);
         } catch (FileSizeException e) {
             log.warn("Fichier trop volumineux: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).build();
@@ -73,36 +61,5 @@ public class ErrorAnalysisController {
             return ResponseEntity.internalServerError()
                     .body(new AnalysisResult("Erreur lors du traitement de la requête"));
         }
-    }
-
-    private void validateImageFile(MultipartFile file) throws FileSizeException, InvalidFileTypeException {
-        if (file.getSize() > MAX_IMAGE_SIZE) {
-            throw new FileSizeException("La taille du fichier dépasse 5MB");
-        }
-
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new InvalidFileTypeException("Seules les images sont acceptées");
-        }
-    }
-
-    // Exceptions métier
-    private static class FileSizeException extends Exception {
-        public FileSizeException(String message) { super(message); }
-    }
-
-    private static class InvalidFileTypeException extends Exception {
-        public InvalidFileTypeException(String message) { super(message); }
-    }
-
-    // DTO de réponse
-    @Getter
-    @AllArgsConstructor
-    public static class AnalysisResult {
-        @Schema(description = "Résultat de l'analyse technique")
-        private final String analysis;
-
-        @Schema(description = "Horodatage de la réponse", example = "2023-10-05T14:30:00Z")
-        private final Instant timestamp = Instant.now();
     }
 }

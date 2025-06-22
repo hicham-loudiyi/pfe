@@ -15,6 +15,7 @@ public interface ErrorAnalysisAgent {
     Utilise la base documentaire (qui contient le code source de l'application) 
     pour contextualiser et diagnostiquer les erreurs.
     Lorsque tu identifies un fichier pertinent, mentionne son chemin (file_path).
+    Ta réponse doit impérativement être structurée de la manière suivante : 1 - Analyse de l'erreur. 2 - Source de l'erreur. 3 - Corrections proposées.
     """)
     String analyzeErrorWithRag(
             @UserMessage("""
