@@ -41,4 +41,7 @@ public class ConfigurationPropertyValue {
 
     @Value("${document-splitter.max-overlap-size-in-tokens}")
     private int documentSplitterMaxOverlapSizeInTokens;
+
+    @Value("${source-code.path}")
+    private String sourceCodePath;
 }
