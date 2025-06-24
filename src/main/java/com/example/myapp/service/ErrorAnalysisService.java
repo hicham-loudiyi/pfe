@@ -17,9 +17,8 @@ import java.util.Base64;
 @Slf4j
 public class ErrorAnalysisService {
 
-    private static final long MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
-
     private final ErrorAnalysisAgent errorAnalysisAgent;
+    private final FileValidator fileValidator;
 
     public AnalysisResult analyzeError(String stacktrace, MultipartFile screenshot)
             throws FileSizeException, InvalidFileTypeException, IOException {
@@ -27,7 +26,7 @@ public class ErrorAnalysisService {
         // Validation de l'image si présente
         String screenshotBase64 = null;
         if (screenshot != null && !screenshot.isEmpty()) {
-            validateImageFile(screenshot);
+            fileValidator.validateImageFile(screenshot);
             screenshotBase64 = Base64.getEncoder().encodeToString(screenshot.getBytes());
         }
 
@@ -35,16 +34,5 @@ public class ErrorAnalysisService {
         String analysis = errorAnalysisAgent.analyzeErrorWithRag(stacktrace, screenshotBase64);
 
         return new AnalysisResult(analysis);
-    }
-
-    private void validateImageFile(MultipartFile file) throws FileSizeException, InvalidFileTypeException {
-        if (file.getSize() > MAX_IMAGE_SIZE) {
-            throw new FileSizeException("La taille du fichier dépasse 5MB");
-        }
-
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new InvalidFileTypeException("Seules les images sont acceptées");
-        }
     }
 }

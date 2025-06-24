@@ -8,40 +8,43 @@ import org.springframework.stereotype.Component;
 @Getter
 public class ConfigurationPropertyValue {
 
-    @Value("${ollama.base-url:http://localhost:11434}")
+    @Value("${max.imagesize:5242880}")
+    private long maxImageSize;
+
+    @Value("${ollama.baseurl:http://localhost:11434}")
     private String ollamaBaseUrl;
 
-    @Value("${ollama.model-name:${ollama.model-name}}")
+    @Value("${ollama.modelname:qwen2.5vl:7b}")
     private String ollamaModelName;
 
-    @Value("${temperature:0.1}")
+    @Value("${ollama.temperature:0.1}")
     private double temperature;
 
-    @Value("${ollama.timeout:120}")
+    @Value("${ollama.timeout:5}")
     private int ollamaTimeout;
 
-    @Value("${ollama.embedding-timeout:5}")
-    private int ollamaEmbeddingTimeout;
-
-    @Value("${chat-memory.max-messages:20}")
+    @Value("${ollama.chatmemory.maxmessages:20}")
     private int chatMemoryMaxMessages;
 
-    @Value("${embeddings-model.model-name:nomic-embed-text}")
+    @Value("${ollama.embeddings.modelname:nomic-embed-text}")
     private String embeddingsModelName;
 
-    @Value("${content-retriever.max-results:2}")
+    @Value("${ollama.embeddings.timeout:5}")
+    private int ollamaEmbeddingTimeout;
+
+    @Value("${contentretriever.maxresults:2}")
     private int contentRetrieverMaxResults;
 
-    @Value("${content-retriever.min-score:0.6}")
+    @Value("${contentretriever.minscore:0.6}")
     private double contentRetrieverMinScore;
 
-    @Value("${document-splitter.max-segment-size-in-tokens:1000}")
+    @Value("${documentsplitter.maxsegmentsizeintokens:1000}")
     private int documentSplitterMaxSegmentSizeInTokens;
 
-    @Value("${document-splitter.max-overlap-size-in-tokens:100}")
+    @Value("${documentsplitter.maxoverlapsizeintokens:100}")
     private int documentSplitterMaxOverlapSizeInTokens;
 
-    @Value("${source-code.path}")
+    @Value("${sourcecode.path}")
     private String sourceCodePath;
 
 }
