@@ -10,17 +10,19 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @AllArgsConstructor
 public class FileValidator {
-
     private final ConfigurationPropertyValue config;
 
-    public void validateImageFile(MultipartFile file) throws FileSizeException, InvalidFileTypeException {
-        if (file.getSize() > config.getMaxImageSize()) {
-            throw new FileSizeException("La taille du fichier dépasse 5MB");
+    public void validateMediaFile(MultipartFile file) throws FileSizeException, InvalidFileTypeException {
+        // Vérification taille
+        if (file.getSize() > config.getMaxMediaSize()) { // Ajoutez cette propriété dans ConfigurationPropertyValue
+            throw new FileSizeException("La taille du fichier dépasse " + config.getMaxMediaSize()/1_000_000 + "MB");
         }
 
+        // Vérification type
         String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new InvalidFileTypeException("Seules les images sont acceptées");
+        if (contentType == null ||
+                (!contentType.startsWith("image/") && !contentType.startsWith("video/"))) {
+            throw new InvalidFileTypeException("Seules les images et vidéos sont acceptées");
         }
     }
 }

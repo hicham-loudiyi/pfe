@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 @Getter
 public class ConfigurationPropertyValue {
 
-    @Value("${max.imagesize:5242880}")
-    private long maxImageSize;
+    @Value("${max.mediasize:20 971 520}")
+    private long maxMediaSize;
 
     @Value("${ollama.baseurl:http://localhost:11434}")
     private String ollamaBaseUrl;

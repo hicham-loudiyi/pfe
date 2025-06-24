@@ -14,25 +14,25 @@ import java.util.Base64;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class ErrorAnalysisService {
-
     private final ErrorAnalysisAgent errorAnalysisAgent;
     private final FileValidator fileValidator;
+    private final VideoProcessor videoProcessor; // Nouveau service à créer
 
-    public AnalysisResult analyzeError(String stacktrace, MultipartFile screenshot)
+    public AnalysisResult analyzeError(String stacktrace, MultipartFile mediaFile)
             throws FileSizeException, InvalidFileTypeException, IOException {
 
-        // Validation de l'image si présente
-        String screenshotBase64 = null;
-        if (screenshot != null && !screenshot.isEmpty()) {
-            fileValidator.validateImageFile(screenshot);
-            screenshotBase64 = Base64.getEncoder().encodeToString(screenshot.getBytes());
+        String mediaBase64 = null;
+        if (mediaFile != null && !mediaFile.isEmpty()) {
+            fileValidator.validateMediaFile(mediaFile);
+            if (mediaFile.getContentType().startsWith("video/")) {
+                mediaBase64 = videoProcessor.extractKeyFrames(mediaFile); // Nouvelle méthode
+            } else {
+                mediaBase64 = Base64.getEncoder().encodeToString(mediaFile.getBytes());
+            }
         }
 
-        // Appel du service d'analyse
-        String analysis = errorAnalysisAgent.analyzeErrorWithRag(stacktrace, screenshotBase64);
-
+        String analysis = errorAnalysisAgent.analyzeErrorWithRag(stacktrace, mediaBase64);
         return new AnalysisResult(analysis);
     }
 }

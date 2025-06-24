@@ -17,15 +17,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
 @RequestMapping("/api/errors")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Error Analysis", description = "API d'analyse technique d'erreurs")
@@ -43,12 +41,12 @@ public class ErrorAnalysisController {
             @ApiResponse(responseCode = "500", description = "Erreur interne")
     })
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<AnalysisResult> analyzeError(
+    public ResponseEntity<?> analyzeError(
             @RequestPart @NotBlank @Parameter(description = "Stacktrace de l'erreur") String stacktrace,
-            @RequestPart(required = false) @Parameter(description = "Capture d'écran optionnelle") MultipartFile screenshot) {
+            @RequestPart(value = "mediaFile", required = false) @Parameter(description = "Capture d'écran optionnelle") MultipartFile mediaFile) {
 
         try {
-            AnalysisResult result = errorAnalysisService.analyzeError(stacktrace, screenshot);
+            AnalysisResult result = errorAnalysisService.analyzeError(stacktrace, mediaFile);
             return ResponseEntity.ok(result);
         } catch (FileSizeException e) {
             log.warn("Fichier trop volumineux: {}", e.getMessage());
